@@ -3,24 +3,23 @@ const wb = new ExcelJS.Workbook();
 
 const fileName = 'DevExercise.xlsx';
 
-let sheetSumCol = [];
+let sheetSumCol = []
 let rentObj = {}
+let numbersSum = [] //array to store every row sum
 
 
 wb.xlsx.readFile(fileName).then(() => {
     // Iterate over all sheets
-    wb.eachSheet(function (worksheet, sheetId) {
-        console.log(worksheet.columnCount)
-       
+    wb.eachSheet(function (worksheet, sheetId) {       
 
-        const testCol = worksheet.getColumn(worksheet.columnCount + 1);
-        testCol.header = "testCell"
-        
+        const lastCol = worksheet.getColumn(worksheet.columnCount + 1);
 
         //First iterate over all rows that have values in a worksheet to write sums and fill "Rent"
         worksheet.eachRow(function (row, rowNumber) {
-            //sum all the numbers and output the result at the last cell.
-            worksheet.getCell('G' + rowNumber).value = sumRow(row.values[3], row.values[4], row.values[5], row.values[6])
+
+            //sum all the numbers and output the result to a global arr (numbersSum)
+            sumRow(row.values)
+
             //check if the row on the loop is "Rent" and is true filling yellow background
             if (row.values[2] == "Rent") {
                 worksheet.getRow(rowNumber).fill = {
@@ -32,8 +31,13 @@ wb.xlsx.readFile(fileName).then(() => {
                 };
             }
         })
-        getMaxNumAndFillRow(worksheet)
 
+        numbersSum.shift();// erasing col title (currently 0)
+        numbersSum.unshift('Sum'); // setting col title to: 'Sum'
+        lastCol.header = numbersSum;
+
+        getMaxNumAndFillRow(worksheet)
+        numbersSum = []; // clear global array for next sheet;
     });
 
     wb.addWorksheet('RentTotal');
@@ -49,19 +53,6 @@ wb.xlsx.readFile(fileName).then(() => {
       const sheetName = ws.getColumn(2);
       sheetName.header = Object.keys(rentObj)
 
-    //   console.log(ws.columnCount)
-
-
-
-
-    // for (const prop in rentObj) {
-    //     ws.getCell('A1').value = rentObj[prop]
-    //     ws.getCell('A2').value = prop
-
-
-
-    //     console.log(`rentObj.${prop} = ${rentObj[prop]}`);
-    //   }
 
 
     wb.xlsx.writeFile("copy" + fileName)
@@ -74,13 +65,15 @@ wb.xlsx.readFile(fileName).then(() => {
 });
 
 //function to detect if all given values are numbers and sum them.
-const sumRow = (a, b, c, d) => {
-    if (!isNaN(a) && !isNaN(b) && !isNaN(c) && !isNaN(d)) {
-        return a + b + c + d;
-    } else {
-        // console.log("NaN");
-    }
-
+const sumRow = (arr) => {
+    let rowTotal = 0;
+    for (let cell in arr) {
+        if (!isNaN(arr[cell])) {
+        rowTotal += arr[cell];
+        } 
+      }
+      numbersSum.push(rowTotal);
+    return rowTotal;
 }
 
 //Getting biggest number from sum col and filling row with orange color.
