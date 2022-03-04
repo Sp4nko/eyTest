@@ -1,5 +1,5 @@
 # eyTest
-To install clone the repo and 'npm install',
+To install clone the repo and 'npm install', 
 The app uses 'exceljs' package.
 
 Make sure that the Excel exercise file located in the apps root folder.
